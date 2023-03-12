@@ -21,6 +21,7 @@ class FireStoreMethods {
         uid: uid,
         username: username,
         likes: [],
+        dislikes: [],
         postId: postId,
         datePublished: DateTime.now(),
         postUrl: photoUrl,
@@ -34,19 +35,49 @@ class FireStoreMethods {
     return res;
   }
 
-  Future<String> likePost(String postId, String uid, List likes) async {
+  Future<String> likePost(
+      String postId, String uid, List likes, List dislikes) async {
+    String res = "Some error occurred";
+    try {
+      if (dislikes.contains(uid)) {
+      } else {
+        if (likes.contains(uid)) {
+          // if the likes list contains the user uid, we need to remove it
+          _firestore.collection('posts').doc(postId).update({
+            'likes': FieldValue.arrayRemove([uid])
+          });
+        } else {
+          // else we need to add uid to the likes array
+          _firestore.collection('posts').doc(postId).update({
+            'likes': FieldValue.arrayUnion([uid])
+          });
+        }
+      }
+      res = 'success';
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
+  //dislike post
+  Future<String> dislikePost(
+      String postId, String uid, List dislikes, List likes) async {
     String res = "Some error occurred";
     try {
       if (likes.contains(uid)) {
-        // if the likes list contains the user uid, we need to remove it
-        _firestore.collection('posts').doc(postId).update({
-          'likes': FieldValue.arrayRemove([uid])
-        });
       } else {
-        // else we need to add uid to the likes array
-        _firestore.collection('posts').doc(postId).update({
-          'likes': FieldValue.arrayUnion([uid])
-        });
+        if (dislikes.contains(uid)) {
+          // if the likes list contains the user uid, we need to remove it
+          _firestore.collection('posts').doc(postId).update({
+            'dislikes': FieldValue.arrayRemove([uid])
+          });
+        } else {
+          // else we need to add uid to the likes array
+          _firestore.collection('posts').doc(postId).update({
+            'dislikes': FieldValue.arrayUnion([uid])
+          });
+        }
       }
       res = 'success';
     } catch (err) {
@@ -98,15 +129,13 @@ class FireStoreMethods {
     return res;
   }
 
-  Future<void> followUser(
-    String uid,
-    String followId
-  ) async {
+  Future<void> followUser(String uid, String followId) async {
     try {
-      DocumentSnapshot snap = await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot snap =
+          await _firestore.collection('users').doc(uid).get();
       List following = (snap.data()! as dynamic)['following'];
 
-      if(following.contains(followId)) {
+      if (following.contains(followId)) {
         await _firestore.collection('users').doc(followId).update({
           'followers': FieldValue.arrayRemove([uid])
         });
@@ -123,8 +152,7 @@ class FireStoreMethods {
           'following': FieldValue.arrayUnion([followId])
         });
       }
-
-    } catch(e) {
+    } catch (e) {
       print(e.toString());
     }
   }

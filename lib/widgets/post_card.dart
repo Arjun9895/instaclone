@@ -158,11 +158,8 @@ class _PostCardState extends State<PostCard> {
           // IMAGE SECTION OF THE POST
           GestureDetector(
             onDoubleTap: () {
-              FireStoreMethods().likePost(
-                widget.snap['postId'].toString(),
-                user.uid,
-                widget.snap['likes'],
-              );
+              FireStoreMethods().likePost(widget.snap['postId'].toString(),
+                  user.uid, widget.snap['likes'], widget.snap['dislikes']);
               setState(() {
                 isLikeAnimating = true;
               });
@@ -217,15 +214,34 @@ class _PostCardState extends State<PostCard> {
                           Icons.favorite_border,
                         ),
                   onPressed: () => FireStoreMethods().likePost(
-                    widget.snap['postId'].toString(),
-                    user.uid,
-                    widget.snap['likes'],
-                  ),
+                      widget.snap['postId'].toString(),
+                      user.uid,
+                      widget.snap['likes'],
+                      widget.snap['dislikes']),
+                ),
+              ),
+              LikeAnimation(
+                isAnimating: widget.snap['dislikes'].contains(user.uid),
+                smallLike: true,
+                child: IconButton(
+                  icon: widget.snap['dislikes'].contains(user.uid)
+                      ? const Icon(
+                          Icons.heart_broken,
+                          color: Colors.red,
+                        )
+                      : const Icon(
+                          Icons.heart_broken_outlined,
+                        ),
+                  onPressed: () => FireStoreMethods().dislikePost(
+                      widget.snap['postId'].toString(),
+                      user.uid,
+                      widget.snap['dislikes'],
+                      widget.snap['likes']),
                 ),
               ),
               IconButton(
                 icon: const Icon(
-                  Icons.comment_outlined,
+                  Icons.comment_bank_outlined,
                 ),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -235,17 +251,6 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
               ),
-              IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                  ),
-                  onPressed: () {}),
-              Expanded(
-                  child: Align(
-                alignment: Alignment.bottomRight,
-                child: IconButton(
-                    icon: const Icon(Icons.bookmark_border), onPressed: () {}),
-              ))
             ],
           ),
           //DESCRIPTION AND NUMBER OF COMMENTS
